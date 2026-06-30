@@ -4,14 +4,21 @@ const isGithubActions = process.env.GITHUB_ACTIONS === "true"
 
 const nextConfig: NextConfig = {
   output: "export",
+
   images: {
     unoptimized: true,
   },
-  // If deploying to nishantsharma113.github.io/snapstore-studio, basePath must be /snapstore-studio
-  basePath: isGithubActions ? "/snapstore-studio" : "",
+
+  // Replace with your repository name
+  basePath: isGithubActions ? "/snapstore_studio" : "",
+  assetPrefix: isGithubActions ? "/snapstore_studio/" : "",
+
+  trailingSlash: true,
+
   typescript: {
     ignoreBuildErrors: true,
   },
+
   eslint: {
     ignoreDuringBuilds: true,
   },
