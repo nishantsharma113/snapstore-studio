@@ -1,5 +1,14 @@
 import type { NextConfig } from "next"
 
-const nextConfig: NextConfig = {/* config options here */}
+const isGithubActions = process.env.GITHUB_ACTIONS === "true"
+
+const nextConfig: NextConfig = {
+  output: "export",
+  images: {
+    unoptimized: true,
+  },
+  // If deploying to nishantsharma113.github.io/snapstore-studio, basePath must be /snapstore-studio
+  basePath: isGithubActions ? "/snapstore-studio" : "",
+}
 
 export default nextConfig
