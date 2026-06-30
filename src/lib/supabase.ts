@@ -10,7 +10,8 @@ const isValid =
   supabaseUrl !== "" &&
   supabaseAnonKey !== "" &&
   !supabaseUrl.includes("YOUR_SUPABASE_") &&
-  !supabaseAnonKey.includes("YOUR_SUPABASE_")
+  !supabaseAnonKey.includes("YOUR_SUPABASE_") &&
+  supabaseAnonKey.startsWith("eyJ")
 
 export const isSimulatedMode = !isValid
 

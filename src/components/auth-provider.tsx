@@ -20,12 +20,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => unsubscribe()
   }, [initializeAuth])
 
+  const cleanPathname = pathname.replace(/\/$/, "") || "/"
+
   // Route protection logic
   React.useEffect(() => {
     if (loading) return
 
-    const isAuthRoute = pathname === "/auth"
-    const isLandingRoute = pathname === "/"
+    const isAuthRoute = cleanPathname === "/auth"
+    const isLandingRoute = cleanPathname === "/"
     const isProtectedRoute = !isAuthRoute && !isLandingRoute
 
     if (isProtectedRoute && !user) {
@@ -33,7 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } else if (isAuthRoute && user) {
       router.replace("/dashboard")
     }
-  }, [user, loading, pathname, router])
+  }, [user, loading, cleanPathname, router])
 
   // Show premium dark loader when authenticating or loading routes
   if (loading) {
@@ -56,8 +58,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   // Prevent flash of protected content while redirect is in progress
-  const isAuthRoute = pathname === "/auth"
-  const isLandingRoute = pathname === "/"
+  const isAuthRoute = cleanPathname === "/auth"
+  const isLandingRoute = cleanPathname === "/"
   const isProtectedRoute = !isAuthRoute && !isLandingRoute
 
   if ((isProtectedRoute && !user) || (isAuthRoute && user)) {

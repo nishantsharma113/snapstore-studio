@@ -248,54 +248,69 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Return dummy unsubscribe function
       return () => {}
     } else {
-      if (!supabase) {
+      const client = supabase
+      if (!client) {
         set({ user: null, loading: false })
         return () => {}
       }
 
+      let unsubscribe = () => {}
+
       // Check current session first
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        const user = session?.user
-        if (user) {
-          const profile: UserProfile = {
-            uid: user.id,
-            email: user.email || "",
-            displayName: user.user_metadata?.display_name || user.email?.split("@")[0] || "User",
-            photoURL: user.user_metadata?.avatar_url || undefined,
-            createdAt: user.created_at,
-            isSimulated: false,
-            emailVerified: !!user.email_confirmed_at,
+      Promise.resolve()
+        .then(() => client.auth.getSession())
+        .then(({ data: { session } }) => {
+          const user = session?.user
+          if (user) {
+            const profile: UserProfile = {
+              uid: user.id,
+              email: user.email || "",
+              displayName: user.user_metadata?.display_name || user.email?.split("@")[0] || "User",
+              photoURL: user.user_metadata?.avatar_url || undefined,
+              createdAt: user.created_at,
+              isSimulated: false,
+              emailVerified: !!user.email_confirmed_at,
+            }
+            set({ user: profile, loading: false })
+          } else {
+            set({ loading: false })
           }
-          set({ user: profile, loading: false })
-        } else {
-          set({ loading: false })
-        }
-      })
+        })
+        .catch((err) => {
+          console.error("Failed to get session:", err)
+          set({ user: null, loading: false })
+        })
 
       // Listen to real Supabase session state changes
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        const user = session?.user
-        if (user) {
-          const profile: UserProfile = {
-            uid: user.id,
-            email: user.email || "",
-            displayName: user.user_metadata?.display_name || user.email?.split("@")[0] || "User",
-            photoURL: user.user_metadata?.avatar_url || undefined,
-            createdAt: user.created_at,
-            isSimulated: false,
-            emailVerified: !!user.email_confirmed_at,
+      try {
+        const {
+          data: { subscription },
+        } = client.auth.onAuthStateChange((_event, session) => {
+          const user = session?.user
+          if (user) {
+            const profile: UserProfile = {
+              uid: user.id,
+              email: user.email || "",
+              displayName: user.user_metadata?.display_name || user.email?.split("@")[0] || "User",
+              photoURL: user.user_metadata?.avatar_url || undefined,
+              createdAt: user.created_at,
+              isSimulated: false,
+              emailVerified: !!user.email_confirmed_at,
+            }
+            set({ user: profile, loading: false })
+          } else {
+            set({ user: null, loading: false })
           }
-          set({ user: profile, loading: false })
-        } else {
-          set({ user: null, loading: false })
-        }
-      })
+        })
 
-      return () => {
-        subscription.unsubscribe()
+        unsubscribe = () => {
+          subscription.unsubscribe()
+        }
+      } catch (err) {
+        console.error("Failed to subscribe to auth state changes:", err)
       }
+
+      return unsubscribe
     }
   },
 }))
