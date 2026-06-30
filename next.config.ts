@@ -10,8 +10,8 @@ const nextConfig: NextConfig = {
   },
 
   // Replace with your repository name
-  basePath: isGithubActions ? "/snapstore_studio" : "",
-  assetPrefix: isGithubActions ? "/snapstore_studio/" : "",
+  basePath: isGithubActions ? "/snapstore-studio" : "",
+  assetPrefix: isGithubActions ? "/snapstore-studio/" : "",
 
   trailingSlash: true,
 
