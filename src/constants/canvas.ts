@@ -123,7 +123,7 @@ export const DEFAULT_CANVAS_HEIGHT = 2688
 /** Canvas zoom limits */
 export const MIN_ZOOM = 0.05
 export const MAX_ZOOM = 3.0
-export const DEFAULT_ZOOM = 0.25
+export const DEFAULT_ZOOM = 0.2
 
 /** Layer defaults */
 export const DEFAULT_LAYER_OPACITY = 1

@@ -72,7 +72,6 @@ const CanvasImage = ({
       setImage(offscreen as unknown as HTMLImageElement)
     }
     img.onerror = () => setFailed(true)
-     
   }, [src, brightness, contrast, saturate])
 
   if (!image || failed) {
@@ -154,8 +153,6 @@ export function CanvasArea() {
     setPan,
     setExportCallback,
     setThumbnailCallback,
-    copyLayerStyle,
-    pasteLayerStyle,
   } = useEditorStore()
 
   const stageRef = React.useRef<Konva.Stage>(null)
@@ -176,15 +173,17 @@ export function CanvasArea() {
 
   // --- Resize observer ---
   React.useEffect(() => {
-    const handleResize = () => {
+    const container = containerRef.current
+    if (!container) return
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect
       setStageSize({
-        width: Math.max(200, window.innerWidth - 320 - 256),
-        height: Math.max(200, window.innerHeight - 56),
+        width: Math.max(200, width),
+        height: Math.max(200, height),
       })
-    }
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
+    })
+    observer.observe(container)
+    return () => observer.disconnect()
   }, [])
 
   // --- Space key → pan mode ---
@@ -219,21 +218,26 @@ export function CanvasArea() {
     }
   }, [])
 
-  // --- Ctrl+Scroll wheel zoom ---
+  // --- Scroll: Ctrl+scroll = zoom, plain scroll = pan ---
   React.useEffect(() => {
     const el = containerRef.current
     if (!el) return
     const handleWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey && !e.metaKey) return
       e.preventDefault()
-      const scaleBy = 1.08
-      const { zoom: current } = useEditorStore.getState()
-      const next = e.deltaY < 0 ? Math.min(current * scaleBy, 3) : Math.max(current / scaleBy, 0.05)
-      setZoom(next)
+      if (e.ctrlKey || e.metaKey) {
+        const scaleBy = 1.08
+        const { zoom: current } = useEditorStore.getState()
+        const next =
+          e.deltaY < 0 ? Math.min(current * scaleBy, 3) : Math.max(current / scaleBy, 0.05)
+        setZoom(next)
+      } else {
+        const { panX: px, panY: py } = useEditorStore.getState()
+        setPan(px - e.deltaX, py - e.deltaY)
+      }
     }
     el.addEventListener("wheel", handleWheel, { passive: false })
     return () => el.removeEventListener("wheel", handleWheel)
-  }, [setZoom])
+  }, [setZoom, setPan])
 
   // --- Clear guides on page switch ---
   React.useEffect(() => {
@@ -246,68 +250,36 @@ export function CanvasArea() {
       const stage = stageRef.current
       if (!stage) return
 
-      const runExport = async (pageIndex: number, pageName: string) => {
-        const oldScaleX = stage.scaleX()
-        const oldScaleY = stage.scaleY()
-        const oldX = stage.x()
-        const oldY = stage.y()
-
-        stage.scaleX(1)
-        stage.scaleY(1)
-        stage.x(0)
-        stage.y(0)
-
-        // For transparent PNG: hide all background nodes before capture
-        const isTransparent = format === "transparent"
-        let bgNodes: Konva.Node[] = []
-        if (isTransparent) {
-          bgNodes = stage.find(".canvas-bg") as Konva.Node[]
-          bgNodes.forEach((n) => n.hide())
-        }
-
-        stage.batchDraw()
-
+      const capturePageDataUrl = (pageIndex: number): string => {
         const x = pageIndex * (canvasWidth + gap)
+        return stage.toDataURL({
+          x,
+          y: 0,
+          width: canvasWidth,
+          height: canvasHeight,
+          pixelRatio: scale,
+        })
+      }
 
-        if (format === "pdf") {
-          const { default: jsPDF } = await import("jspdf")
-          const dataUrl = stage.toDataURL({
-            x,
-            y: 0,
-            width: canvasWidth,
-            height: canvasHeight,
-            pixelRatio: scale,
-            mimeType: "image/png",
-          })
-          const pdf = new jsPDF({
-            orientation: canvasWidth > canvasHeight ? "landscape" : "portrait",
-            unit: "px",
-            format: [canvasWidth * scale, canvasHeight * scale],
-            hotfixes: ["px_scaling"],
-          })
-          pdf.addImage(dataUrl, "PNG", 0, 0, canvasWidth * scale, canvasHeight * scale)
-          pdf.save(`${pageName.toLowerCase().replace(/\s+/g, "_")}_${scale}x.pdf`)
-        } else {
-          const mimeType = format === "jpeg" ? "image/jpeg" : "image/png"
-          const ext = format === "transparent" ? "png" : format
-          const suffix = format === "transparent" ? `${scale}x_transparent` : `${scale}x`
-          const dataUrl = stage.toDataURL({
-            x,
-            y: 0,
-            width: canvasWidth,
-            height: canvasHeight,
-            pixelRatio: scale,
-            mimeType,
-          })
-          const link = document.createElement("a")
-          link.download = `${pageName.toLowerCase().replace(/\s+/g, "_")}_${suffix}.${ext}`
-          link.href = dataUrl
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-        }
+      // Reset stage to 1:1 for pixel-accurate capture
+      const oldScaleX = stage.scaleX()
+      const oldScaleY = stage.scaleY()
+      const oldX = stage.x()
+      const oldY = stage.y()
+      stage.scaleX(1)
+      stage.scaleY(1)
+      stage.x(0)
+      stage.y(0)
 
-        // Restore background and stage transform
+      const isTransparent = format === "transparent"
+      let bgNodes: Konva.Node[] = []
+      if (isTransparent) {
+        bgNodes = stage.find(".canvas-bg") as Konva.Node[]
+        bgNodes.forEach((n) => n.hide())
+      }
+      stage.batchDraw()
+
+      const restoreStage = () => {
         if (isTransparent) bgNodes.forEach((n) => n.show())
         stage.scaleX(oldScaleX)
         stage.scaleY(oldScaleY)
@@ -318,12 +290,93 @@ export function CanvasArea() {
 
       if (target === "active") {
         const activeIndex = pages.findIndex((p) => p.id === currentPageId)
-        if (activeIndex !== -1) await runExport(activeIndex, pages[activeIndex].name)
-      } else {
-        for (let i = 0; i < pages.length; i++) {
-          await runExport(i, pages[i].name)
-          await new Promise((resolve) => setTimeout(resolve, 350))
+        if (activeIndex === -1) {
+          restoreStage()
+          return
         }
+
+        const slug = pages[activeIndex].name.toLowerCase().replace(/\s+/g, "_")
+
+        if (format === "pdf") {
+          const { default: jsPDF } = await import("jspdf")
+          const dataUrl = capturePageDataUrl(activeIndex)
+          const pdf = new jsPDF({
+            orientation: canvasWidth > canvasHeight ? "landscape" : "portrait",
+            unit: "px",
+            format: [canvasWidth * scale, canvasHeight * scale],
+            hotfixes: ["px_scaling"],
+          })
+          pdf.addImage(dataUrl, "PNG", 0, 0, canvasWidth * scale, canvasHeight * scale)
+          pdf.save(`${slug}_${scale}x.pdf`)
+        } else {
+          const mimeType = format === "jpeg" ? "image/jpeg" : "image/png"
+          const ext = format === "transparent" ? "png" : format
+          const suffix = format === "transparent" ? `${scale}x_transparent` : `${scale}x`
+          const dataUrl = stage.toDataURL({
+            x: activeIndex * (canvasWidth + gap),
+            y: 0,
+            width: canvasWidth,
+            height: canvasHeight,
+            pixelRatio: scale,
+            mimeType,
+          })
+          const link = document.createElement("a")
+          link.download = `${slug}_${suffix}.${ext}`
+          link.href = dataUrl
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
+
+        restoreStage()
+      } else {
+        // Bundle all screens into a single ZIP file
+        const { default: JSZip } = await import("jszip")
+        const zip = new JSZip()
+
+        for (let i = 0; i < pages.length; i++) {
+          const slug = pages[i].name.toLowerCase().replace(/\s+/g, "_")
+
+          if (format === "pdf") {
+            const { default: jsPDF } = await import("jspdf")
+            const dataUrl = capturePageDataUrl(i)
+            const pdf = new jsPDF({
+              orientation: canvasWidth > canvasHeight ? "landscape" : "portrait",
+              unit: "px",
+              format: [canvasWidth * scale, canvasHeight * scale],
+              hotfixes: ["px_scaling"],
+            })
+            pdf.addImage(dataUrl, "PNG", 0, 0, canvasWidth * scale, canvasHeight * scale)
+            const pdfBase64 = pdf.output("datauristring").split(",")[1]
+            zip.file(`${slug}_${scale}x.pdf`, pdfBase64, { base64: true })
+          } else {
+            const mimeType = format === "jpeg" ? "image/jpeg" : "image/png"
+            const ext = format === "transparent" ? "png" : format
+            const suffix = format === "transparent" ? `${scale}x_transparent` : `${scale}x`
+            const dataUrl = stage.toDataURL({
+              x: i * (canvasWidth + gap),
+              y: 0,
+              width: canvasWidth,
+              height: canvasHeight,
+              pixelRatio: scale,
+              mimeType,
+            })
+            const base64 = dataUrl.split(",")[1]
+            zip.file(`${slug}_${suffix}.${ext}`, base64, { base64: true })
+          }
+        }
+
+        restoreStage()
+
+        const blob = await zip.generateAsync({ type: "blob" })
+        const link = document.createElement("a")
+        const projectName = pages[0]?.name?.split(" ")[0]?.toLowerCase() || "screens"
+        link.download = `${projectName}_${scale}x_screens.zip`
+        link.href = URL.createObjectURL(blob)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(link.href)
       }
     })
     return () => setExportCallback(null)
@@ -1246,6 +1299,7 @@ export function CanvasArea() {
 
     return (
       <Group key={page.id} x={pageX} y={0}>
+        {/* Page label — click always selects this page */}
         <Text
           text={page.name.toUpperCase()}
           x={0}
@@ -1256,7 +1310,17 @@ export function CanvasArea() {
           fontFamily="Inter"
           fontStyle="bold"
           fill={isActive ? "#a855f7" : "#52525b"}
+          onClick={() => setCurrentPageId(page.id)}
+          onTouchStart={() => setCurrentPageId(page.id)}
         />
+
+        {/* Content layers */}
+        <Group clip={{ x: 0, y: 0, width: canvasWidth, height: canvasHeight }}>
+          {renderBackground(page.background)}
+          {page.layers.map((l) => renderLayerElement(l, page.id))}
+        </Group>
+
+        {/* Border — visual only, rendered above content */}
         <Rect
           width={canvasWidth}
           height={canvasHeight}
@@ -1267,13 +1331,20 @@ export function CanvasArea() {
           shadowBlur={30}
           shadowOpacity={0.4}
           shadowOffset={{ x: 0, y: 15 }}
-          onClick={() => setCurrentPageId(page.id)}
-          onTouchStart={() => setCurrentPageId(page.id)}
+          listening={false}
         />
-        <Group clip={{ x: 0, y: 0, width: canvasWidth, height: canvasHeight }}>
-          {renderBackground(page.background)}
-          {page.layers.map((l) => renderLayerElement(l, page.id))}
-        </Group>
+
+        {/* Transparent overlay on inactive pages — click anywhere to select */}
+        {!isActive && (
+          <Rect
+            width={canvasWidth}
+            height={canvasHeight}
+            fill="rgba(0,0,0,0.001)"
+            cornerRadius={16}
+            onClick={() => setCurrentPageId(page.id)}
+            onTouchStart={() => setCurrentPageId(page.id)}
+          />
+        )}
       </Group>
     )
   }

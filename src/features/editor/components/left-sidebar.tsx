@@ -29,8 +29,8 @@ export function LeftSidebar() {
     setBackground,
     addLayer,
     setLayers,
-    addPage,
-    pages,
+    setPages,
+    setCurrentPageId,
     layers,
     selectedIds,
     setSelectedIds,
@@ -40,6 +40,7 @@ export function LeftSidebar() {
   } = useEditorStore()
 
   const uid = () => `layer_${Math.random().toString(36).slice(2, 11)}`
+  const pid = () => `page_${Math.random().toString(36).slice(2, 11)}`
 
   // Base64 simulated image uploads
   const [uploads, setUploads] = React.useState<string[]>([])
@@ -290,25 +291,30 @@ export function LeftSidebar() {
         const cx = (w: number) => Math.round((1242 - w) / 2)
         const base = { rotation: 0, opacity: 1, isLocked: false, isVisible: true }
 
-        const applyPreset = (preset: "classic" | "banner" | "minimal") => {
-          // Ensure at least one page exists (Zustand set() is synchronous)
-          if (pages.length === 0) addPage("Screen 1")
+        const applyPreset = (preset: "classic" | "banner" | "minimal" | "light") => {
+          const reset = (
+            bg: Parameters<typeof setBackground>[0],
+            layerList: Parameters<typeof setLayers>[0]
+          ) => {
+            const newId = pid()
+            setPages([{ id: newId, name: "Page 1", background: bg, layers: layerList }])
+            setCurrentPageId(newId)
+          }
 
           if (preset === "classic") {
-            setBackground({ type: "solid", color: "#09090b" })
-            setLayers([
+            reset({ type: "solid", color: "#09090b" }, [
               {
                 ...base,
                 id: uid(),
                 name: "App Heading",
                 type: "text",
-                x: cx(940),
-                y: 200,
-                width: 940,
+                x: cx(1000),
+                y: 100,
+                width: 1000,
                 height: 140,
                 textProps: {
                   text: "YOUR APP NAME",
-                  fontSize: 96,
+                  fontSize: 100,
                   fontFamily: "Inter",
                   fontStyle: "bold",
                   fill: "#ffffff",
@@ -320,10 +326,10 @@ export function LeftSidebar() {
                 id: uid(),
                 name: "Sub-heading",
                 type: "text",
-                x: cx(840),
-                y: 380,
-                width: 840,
-                height: 90,
+                x: cx(900),
+                y: 210,
+                width: 900,
+                height: 80,
                 textProps: {
                   text: "The best app for everything",
                   fontSize: 52,
@@ -338,82 +344,83 @@ export function LeftSidebar() {
                 id: uid(),
                 name: "iPhone 16 Pro",
                 type: "device",
-                x: cx(620),
-                y: 520,
-                width: 620,
-                height: 1260,
+                x: cx(960),
+                y: 320,
+                width: 960,
+                height: 1960,
                 deviceProps: { frameType: "iphone_16" },
               },
             ])
           } else if (preset === "banner") {
-            setBackground({
-              type: "gradient",
-              gradient: "linear-gradient(160deg, #7c3aed 0%, #4f46e5 55%, #0ea5e9 100%)",
-            })
-            setLayers([
+            reset(
               {
-                ...base,
-                id: uid(),
-                name: "iPhone 16 Pro",
-                type: "device",
-                x: cx(540),
-                y: 300,
-                width: 540,
-                height: 1100,
-                deviceProps: { frameType: "iphone_16" },
+                type: "gradient",
+                gradient: "linear-gradient(160deg, #7c3aed 0%, #4f46e5 55%, #0ea5e9 100%)",
               },
-              {
-                ...base,
-                id: uid(),
-                name: "Feature Badge",
-                type: "text",
-                x: cx(760),
-                y: 1500,
-                width: 760,
-                height: 90,
-                textProps: {
-                  text: "★  Featured on App Store",
-                  fontSize: 48,
-                  fontFamily: "Inter",
-                  fontStyle: "bold",
-                  fill: "#fde68a",
-                  align: "center",
+              [
+                {
+                  ...base,
+                  id: uid(),
+                  name: "iPhone 16 Pro",
+                  type: "device",
+                  x: cx(960),
+                  y: 180,
+                  width: 960,
+                  height: 1960,
+                  deviceProps: { frameType: "iphone_16" },
                 },
-              },
-              {
-                ...base,
-                id: uid(),
-                name: "Tagline",
-                type: "text",
-                x: cx(940),
-                y: 1640,
-                width: 940,
-                height: 130,
-                textProps: {
-                  text: "Download now. Free forever.",
-                  fontSize: 60,
-                  fontFamily: "Inter",
-                  fontStyle: "bold",
-                  fill: "#ffffff",
-                  align: "center",
+                {
+                  ...base,
+                  id: uid(),
+                  name: "Feature Badge",
+                  type: "text",
+                  x: cx(900),
+                  y: 2180,
+                  width: 900,
+                  height: 90,
+                  textProps: {
+                    text: "★  Featured on App Store",
+                    fontSize: 52,
+                    fontFamily: "Inter",
+                    fontStyle: "bold",
+                    fill: "#fde68a",
+                    align: "center",
+                  },
                 },
-              },
-            ])
-          } else {
-            setBackground({ type: "solid", color: "#f8fafc" })
-            setLayers([
+                {
+                  ...base,
+                  id: uid(),
+                  name: "Tagline",
+                  type: "text",
+                  x: cx(1000),
+                  y: 2310,
+                  width: 1000,
+                  height: 130,
+                  textProps: {
+                    text: "Download now. Free forever.",
+                    fontSize: 64,
+                    fontFamily: "Inter",
+                    fontStyle: "bold",
+                    fill: "#ffffff",
+                    align: "center",
+                  },
+                },
+              ]
+            )
+          } else if (preset === "minimal") {
+            reset({ type: "solid", color: "#f8fafc" }, [
               {
                 ...base,
                 id: uid(),
                 name: "App Title",
                 type: "text",
-                x: cx(900),
-                y: 200,
-                width: 900,
-                height: 120,
+                x: cx(1000),
+                y: 100,
+                width: 1000,
+                height: 130,
                 textProps: {
                   text: "Clean. Simple. Powerful.",
-                  fontSize: 76,
+                  fontSize: 100,
                   fontFamily: "Inter",
                   fontStyle: "bold",
                   fill: "#0f172a",
@@ -425,13 +432,13 @@ export function LeftSidebar() {
                 id: uid(),
                 name: "Description",
                 type: "text",
-                x: cx(800),
-                y: 360,
-                width: 800,
+                x: cx(900),
+                y: 210,
+                width: 900,
                 height: 80,
                 textProps: {
                   text: "Design your screenshots in minutes",
-                  fontSize: 44,
+                  fontSize: 48,
                   fontFamily: "Inter",
                   fontStyle: "normal",
                   fill: "#64748b",
@@ -443,10 +450,42 @@ export function LeftSidebar() {
                 id: uid(),
                 name: "iPhone 16 Pro",
                 type: "device",
-                x: cx(580),
-                y: 490,
-                width: 580,
-                height: 1180,
+                x: cx(960),
+                y: 320,
+                width: 960,
+                height: 1960,
+                deviceProps: { frameType: "iphone_16" },
+              },
+            ])
+          } else {
+            reset({ type: "solid", color: "#cae8fb" }, [
+              {
+                ...base,
+                id: uid(),
+                name: "Headline",
+                type: "text",
+                x: cx(1000),
+                y: 100,
+                width: 1000,
+                height: 150,
+                textProps: {
+                  text: "Add text here",
+                  fontSize: 100,
+                  fontFamily: "Inter",
+                  fontStyle: "bold",
+                  fill: "#0f172a",
+                  align: "center",
+                },
+              },
+              {
+                ...base,
+                id: uid(),
+                name: "iPhone 16 Pro",
+                type: "device",
+                x: cx(960),
+                y: 300,
+                width: 960,
+                height: 1960,
                 deviceProps: { frameType: "iphone_16" },
               },
             ])
@@ -506,6 +545,25 @@ export function LeftSidebar() {
                 </div>
                 <span className="text-[10px] text-zinc-500 ml-7">
                   Light bg · clean device · elegant text
+                </span>
+              </button>
+              <button
+                onClick={() => applyPreset("light")}
+                className="flex flex-col items-start text-left p-3 rounded-lg border border-zinc-900 bg-zinc-950/40 hover:border-purple-500/40 hover:bg-purple-500/5 cursor-pointer transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <div
+                    className="h-5 w-5 rounded border border-zinc-700 flex items-center justify-center"
+                    style={{ backgroundColor: "#cae8fb" }}
+                  >
+                    <div className="h-3 w-1.5 rounded-sm bg-zinc-800" />
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-300 group-hover:text-white">
+                    App Showcase Light
+                  </span>
+                </div>
+                <span className="text-[10px] text-zinc-500 ml-7">
+                  Sky blue bg · bold header · iPhone frame
                 </span>
               </button>
             </div>

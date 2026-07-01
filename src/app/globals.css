@@ -3,6 +3,7 @@
 @plugin "tailwindcss-animate";
 
 @custom-variant hover (&:hover);
+@variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
    DESIGN TOKENS — Tailwind v4 @theme
