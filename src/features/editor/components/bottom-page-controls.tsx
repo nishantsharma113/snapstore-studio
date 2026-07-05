@@ -108,6 +108,7 @@ export function BottomPageControls() {
               value={currentPageId}
               onChange={(e) => setCurrentPageId(e.target.value)}
               className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs font-semibold text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer h-8 max-w-[200px]"
+              style={{ colorScheme: "dark" }}
             >
               {pages.map((p) => (
                 <option key={p.id} value={p.id}>

@@ -27,6 +27,75 @@ import {
   AlignVerticalDistributeCenter,
 } from "lucide-react"
 import { AlignMode } from "@/store/editorStore"
+import { ChevronDown, Check } from "lucide-react"
+
+interface SelectOption {
+  value: string
+  label: string
+}
+
+function EditorSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: SelectOption[]
+}) {
+  const [open, setOpen] = React.useState(false)
+  const ref = React.useRef<HTMLDivElement>(null)
+  const selectedLabel = options.find((o) => o.value === value)?.label ?? value
+
+  React.useEffect(() => {
+    if (!open) return
+    function onOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onOutside)
+    return () => document.removeEventListener("mousedown", onOutside)
+  }, [open])
+
+  return (
+    <div ref={ref} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer hover:border-zinc-700 transition-colors"
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-zinc-500 shrink-0 ml-1.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute z-[200] left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl overflow-hidden">
+          <div className="max-h-52 overflow-y-auto py-1 scrollbar-thin">
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value)
+                  setOpen(false)
+                }}
+                className={`w-full flex items-center justify-between px-3 py-1.5 text-xs cursor-pointer transition-colors text-left ${
+                  opt.value === value
+                    ? "bg-purple-500/20 text-purple-300"
+                    : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                }`}
+              >
+                <span>{opt.label}</span>
+                {opt.value === value && <Check className="h-3 w-3 shrink-0 text-purple-400" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function RightSidebar() {
   const {
@@ -349,24 +418,24 @@ export function RightSidebar() {
         <Label className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">
           Blend Mode
         </Label>
-        <select
+        <EditorSelect
           value={activeLayer.blendMode || "source-over"}
-          onChange={(e) => updateLayer(activeLayer.id, { blendMode: e.target.value })}
-          className="w-full bg-zinc-900/40 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer"
-        >
-          <option value="source-over">Normal</option>
-          <option value="multiply">Multiply</option>
-          <option value="screen">Screen</option>
-          <option value="overlay">Overlay</option>
-          <option value="darken">Darken</option>
-          <option value="lighten">Lighten</option>
-          <option value="color-dodge">Color Dodge</option>
-          <option value="color-burn">Color Burn</option>
-          <option value="hard-light">Hard Light</option>
-          <option value="soft-light">Soft Light</option>
-          <option value="difference">Difference</option>
-          <option value="exclusion">Exclusion</option>
-        </select>
+          onChange={(v) => updateLayer(activeLayer.id, { blendMode: v })}
+          options={[
+            { value: "source-over", label: "Normal" },
+            { value: "multiply", label: "Multiply" },
+            { value: "screen", label: "Screen" },
+            { value: "overlay", label: "Overlay" },
+            { value: "darken", label: "Darken" },
+            { value: "lighten", label: "Lighten" },
+            { value: "color-dodge", label: "Color Dodge" },
+            { value: "color-burn", label: "Color Burn" },
+            { value: "hard-light", label: "Hard Light" },
+            { value: "soft-light", label: "Soft Light" },
+            { value: "difference", label: "Difference" },
+            { value: "exclusion", label: "Exclusion" },
+          ]}
+        />
       </div>
 
       {/* Shadow Properties */}
@@ -535,13 +604,10 @@ export function RightSidebar() {
           {/* Font Family */}
           <div className="space-y-1">
             <Label htmlFor="text-font">Font Family</Label>
-            <select
-              id="text-font"
+            <EditorSelect
               value={activeLayer.textProps.fontFamily}
-              onChange={(e) => handleTextPropChange("fontFamily", e.target.value)}
-              className="w-full bg-zinc-900/40 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer"
-            >
-              {[
+              onChange={(v) => handleTextPropChange("fontFamily", v)}
+              options={[
                 "Inter",
                 "Arial",
                 "Helvetica",
@@ -555,12 +621,8 @@ export function RightSidebar() {
                 "Lucida Console",
                 "Impact",
                 "Comic Sans MS",
-              ].map((font) => (
-                <option key={font} value={font} style={{ fontFamily: font }}>
-                  {font}
-                </option>
-              ))}
-            </select>
+              ].map((f) => ({ value: f, label: f }))}
+            />
           </div>
 
           {/* Font size */}
