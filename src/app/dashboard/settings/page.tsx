@@ -282,7 +282,7 @@ export default function SettingsPage() {
               </div>
             </SettingRow>
 
-            <SettingRow
+            {/* <SettingRow
               label="Language"
               description="Select the display language for the interface"
             >
@@ -298,7 +298,7 @@ export default function SettingsPage() {
                 <option value="ja">日本語</option>
                 <option value="zh">中文</option>
               </select>
-            </SettingRow>
+            </SettingRow> */}
           </SectionCard>
 
           {/* Notifications */}

@@ -116,9 +116,9 @@ export default function DashboardPage() {
               Simulated
             </span>
           )}
-          <button className="p-1.5 rounded-lg border border-border bg-surface text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+          {/* <button className="p-1.5 rounded-lg border border-border bg-surface text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
             <Bell className="h-3.5 w-3.5" />
-          </button>
+          </button> */}
           <ThemeToggle />
           <Button
             onClick={() => setIsCreateModalOpen(true)}
