@@ -183,7 +183,10 @@ export function TopToolbar() {
 
   return (
     <>
-      <header className="border-b border-zinc-900 bg-zinc-950/60 backdrop-blur-md px-6 h-14 flex items-center justify-between sticky top-0 z-40 select-none">
+      <header
+        className="border-b border-zinc-800/60 bg-zinc-950/80 backdrop-blur-xl px-6 h-14 flex items-center justify-between sticky top-0 z-40 select-none"
+        style={{ boxShadow: "0 1px 0 0 rgba(139,92,246,0.06)" }}
+      >
         {/* Left: Back & Title */}
         <div className="flex items-center gap-4">
           <button
@@ -441,7 +444,7 @@ export function TopToolbar() {
             <Button
               onClick={() => setExportOpen(!exportOpen)}
               size="sm"
-              className="bg-purple-600 hover:bg-purple-700 text-white font-medium text-xs h-8 shadow-lg hover:shadow-purple-500/15 cursor-pointer"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs h-8 shadow-lg shadow-purple-900/40 hover:shadow-purple-700/50 cursor-pointer border-0 transition-all duration-200"
               disabled={isExporting}
             >
               {isExporting ? (

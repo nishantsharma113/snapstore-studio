@@ -100,7 +100,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
       {/* Top Navbar */}
-      <header className="border-b border-border bg-surface/60 backdrop-blur-md shrink-0 px-6 h-14 flex items-center justify-between z-10">
+      <header className="border-b border-border bg-surface/60 backdrop-blur-md shrink-0 px-6 h-14 flex items-center justify-between z-10 relative">
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
         <div className="flex flex-col">
           <h1 className="text-sm font-bold text-foreground tracking-tight">Creative Dashboard</h1>
           <p className="text-[10px] text-muted-foreground hidden sm:block">
@@ -207,7 +208,8 @@ export default function DashboardPage() {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="bg-transparent focus:outline-none cursor-pointer text-foreground"
+                    className="bg-transparent focus:outline-none cursor-pointer text-foreground text-xs"
+                    style={{ colorScheme: "light dark" }}
                   >
                     <option value="updated">Recent</option>
                     <option value="name">A–Z</option>

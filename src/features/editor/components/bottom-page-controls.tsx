@@ -67,7 +67,10 @@ export function BottomPageControls() {
   if (pages.length === 0) return null
 
   return (
-    <div className="shrink-0 bg-zinc-950 border-t border-zinc-900 px-4 py-2 flex flex-col sm:flex-row gap-3 items-center justify-between">
+    <div
+      className="shrink-0 bg-zinc-950/95 backdrop-blur-sm border-t border-zinc-800/60 px-4 py-2 flex flex-col sm:flex-row gap-3 items-center justify-between relative"
+      style={{ boxShadow: "0 -1px 0 0 rgba(139,92,246,0.08)" }}
+    >
       {/* Left: Page Navigation & Actions */}
       <div className="flex items-center gap-2 w-full sm:w-auto">
         <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider hidden md:inline">

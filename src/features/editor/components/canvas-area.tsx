@@ -1392,7 +1392,7 @@ export function CanvasArea() {
   return (
     <div
       ref={containerRef}
-      className="flex-1 h-full bg-zinc-900 overflow-hidden relative flex items-center justify-center"
+      className="flex-1 h-full bg-zinc-900 bg-dot-pattern overflow-hidden relative flex items-center justify-center"
       style={{ cursor: cursorStyle }}
       onMouseDown={handleContainerMouseDown}
       onMouseMove={handleContainerMouseMove}

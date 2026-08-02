@@ -499,73 +499,72 @@ export function LeftSidebar() {
               Click a preset to populate the canvas with a starter layout.
             </p>
             <div className="grid grid-cols-1 gap-2 pt-2">
-              <button
-                onClick={() => applyPreset("classic")}
-                className="flex flex-col items-start text-left p-3 rounded-lg border border-zinc-900 bg-zinc-950/40 hover:border-purple-500/40 hover:bg-purple-500/5 cursor-pointer transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="h-5 w-5 rounded bg-zinc-800 flex items-center justify-center">
-                    <div className="h-3 w-1.5 rounded-sm bg-zinc-400" />
-                  </div>
-                  <span className="text-xs font-semibold text-zinc-300 group-hover:text-white">
-                    Split Screen Classic
-                  </span>
-                </div>
-                <span className="text-[10px] text-zinc-500 ml-7">
-                  Dark bg · centered device · bold header
-                </span>
-              </button>
-              <button
-                onClick={() => applyPreset("banner")}
-                className="flex flex-col items-start text-left p-3 rounded-lg border border-zinc-900 bg-zinc-950/40 hover:border-purple-500/40 hover:bg-purple-500/5 cursor-pointer transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="h-5 w-5 rounded bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center">
-                    <div className="h-2 w-3 rounded-sm bg-white/50" />
-                  </div>
-                  <span className="text-xs font-semibold text-zinc-300 group-hover:text-white">
-                    Marketing Banner
-                  </span>
-                </div>
-                <span className="text-[10px] text-zinc-500 ml-7">
-                  Gradient bg · device + feature badge
-                </span>
-              </button>
-              <button
-                onClick={() => applyPreset("minimal")}
-                className="flex flex-col items-start text-left p-3 rounded-lg border border-zinc-900 bg-zinc-950/40 hover:border-purple-500/40 hover:bg-purple-500/5 cursor-pointer transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="h-5 w-5 rounded bg-slate-100 border border-zinc-700 flex items-center justify-center">
-                    <div className="h-3 w-1.5 rounded-sm bg-slate-400" />
-                  </div>
-                  <span className="text-xs font-semibold text-zinc-300 group-hover:text-white">
-                    Showcase Minimal
-                  </span>
-                </div>
-                <span className="text-[10px] text-zinc-500 ml-7">
-                  Light bg · clean device · elegant text
-                </span>
-              </button>
-              <button
-                onClick={() => applyPreset("light")}
-                className="flex flex-col items-start text-left p-3 rounded-lg border border-zinc-900 bg-zinc-950/40 hover:border-purple-500/40 hover:bg-purple-500/5 cursor-pointer transition-all duration-200 group"
-              >
-                <div className="flex items-center gap-2 mb-1">
+              {[
+                {
+                  key: "classic" as const,
+                  label: "Split Screen Classic",
+                  desc: "Dark bg · centered device · bold header",
+                  preview: "bg-zinc-900",
+                  accent: "from-zinc-600 to-zinc-500",
+                  dot: "bg-zinc-400",
+                },
+                {
+                  key: "banner" as const,
+                  label: "Marketing Banner",
+                  desc: "Gradient bg · device + feature badge",
+                  preview: "bg-gradient-to-br from-purple-600 to-blue-500",
+                  accent: "from-purple-500 to-blue-400",
+                  dot: "bg-white/70",
+                },
+                {
+                  key: "minimal" as const,
+                  label: "Showcase Minimal",
+                  desc: "Light bg · clean device · elegant text",
+                  preview: "bg-slate-100",
+                  accent: "from-slate-400 to-slate-300",
+                  dot: "bg-slate-500",
+                },
+                {
+                  key: "light" as const,
+                  label: "App Showcase Light",
+                  desc: "Sky blue bg · bold header · iPhone frame",
+                  preview: "",
+                  previewStyle: { backgroundColor: "#cae8fb" },
+                  accent: "from-sky-400 to-cyan-300",
+                  dot: "bg-slate-700",
+                },
+              ].map((p) => (
+                <button
+                  key={p.key}
+                  onClick={() => applyPreset(p.key)}
+                  className="flex items-center gap-3 text-left p-3 rounded-xl border border-zinc-800/60 bg-zinc-900/30 hover:border-purple-500/50 hover:bg-purple-500/8 cursor-pointer transition-all duration-200 group"
+                >
+                  {/* Mini canvas preview swatch */}
                   <div
-                    className="h-5 w-5 rounded border border-zinc-700 flex items-center justify-center"
-                    style={{ backgroundColor: "#cae8fb" }}
+                    className={`h-10 w-8 rounded-lg shrink-0 overflow-hidden border border-white/10 ${p.preview}`}
+                    style={p.previewStyle}
                   >
-                    <div className="h-3 w-1.5 rounded-sm bg-zinc-800" />
+                    <div className="h-full w-full flex flex-col items-center justify-between py-1">
+                      <div className="h-0.5 w-4 rounded-full bg-white/40" />
+                      <div className={`h-5 w-2 rounded-sm ${p.dot} opacity-70`} />
+                      <div className="h-0.5 w-3 rounded-full bg-white/20" />
+                    </div>
                   </div>
-                  <span className="text-xs font-semibold text-zinc-300 group-hover:text-white">
-                    App Showcase Light
-                  </span>
-                </div>
-                <span className="text-[10px] text-zinc-500 ml-7">
-                  Sky blue bg · bold header · iPhone frame
-                </span>
-              </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <div
+                        className={`h-1 w-6 rounded-full bg-gradient-to-r ${p.accent} opacity-80`}
+                      />
+                      <span className="text-[10px] font-bold text-zinc-300 group-hover:text-white truncate transition-colors">
+                        {p.label}
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-zinc-600 group-hover:text-zinc-500 leading-relaxed block">
+                      {p.desc}
+                    </span>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         )
