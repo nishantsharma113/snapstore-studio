@@ -56,7 +56,10 @@ interface EditorState {
 
   setLayers: (layers: Layer[]) => void
   addLayer: (
-    layer: Omit<Layer, "id" | "x" | "y" | "rotation" | "opacity" | "isLocked" | "isVisible">
+    layer: Omit<Layer, "id" | "x" | "y" | "rotation" | "opacity" | "isLocked" | "isVisible"> & {
+      x?: number
+      y?: number
+    }
   ) => void
   updateLayer: (id: string, updates: Partial<Layer>) => void
   deleteLayer: (id: string) => void
@@ -292,11 +295,12 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   addLayer: (layerData) => {
     set((state) => {
+      const defaultY = layerData.type === "device" ? Math.round(state.canvasHeight * 0.2) : 120
       const newLayer: Layer = {
         ...layerData,
         id: newId("layer"),
-        x: state.canvasWidth / 2 - (layerData.width || 200) / 2,
-        y: 120,
+        x: layerData.x ?? Math.round(state.canvasWidth / 2 - (layerData.width || 200) / 2),
+        y: layerData.y ?? defaultY,
         rotation: 0,
         opacity: 1,
         isLocked: false,

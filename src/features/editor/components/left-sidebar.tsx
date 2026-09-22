@@ -37,6 +37,10 @@ export function LeftSidebar() {
     updateLayer,
     deleteLayer,
     moveLayerToIndex,
+    canvasWidth,
+    canvasHeight,
+    setCanvasDimensions,
+    setZoom,
   } = useEditorStore()
 
   const uid = () => `layer_${Math.random().toString(36).slice(2, 11)}`
@@ -123,11 +127,25 @@ export function LeftSidebar() {
       .split("_")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ")
+
+    const targetW = isTablet
+      ? Math.min(Math.round(canvasWidth * 0.74), frameType === "ipad_pro" ? 1500 : 1240)
+      : Math.min(Math.round(canvasWidth * 0.74), 960)
+
+    const targetH =
+      frameType === "ipad_pro"
+        ? Math.round(targetW * (4 / 3))
+        : isTablet
+          ? Math.round(targetW * 1.5)
+          : Math.round(targetW * 2.05)
+
     addLayer({
       name: displayName,
       type: "device",
-      width: isTablet ? 900 : 800,
-      height: isTablet ? 1200 : 1600,
+      width: targetW,
+      height: targetH,
+      x: Math.round((canvasWidth - targetW) / 2),
+      y: Math.round(canvasHeight * 0.22),
       deviceProps: {
         frameType,
         screenshotUrl: undefined,
@@ -304,11 +322,16 @@ export function LeftSidebar() {
         const applyPreset = (preset: PresetKey) => {
           const reset = (
             bg: Parameters<typeof setBackground>[0],
-            layerList: Parameters<typeof setLayers>[0]
+            layerList: Parameters<typeof setLayers>[0],
+            width = 1242,
+            height = 2688,
+            zoomLevel = 0.2
           ) => {
             const newId = pid()
             setPages([{ id: newId, name: "Page 1", background: bg, layers: layerList }])
             setCurrentPageId(newId)
+            setCanvasDimensions(width, height)
+            setZoom(zoomLevel)
           }
 
           if (preset === "appscreens") {
@@ -605,7 +628,7 @@ export function LeftSidebar() {
               },
             ])
           } else if (preset === "ipad") {
-            // iPad Pro layout — 2048×2732 canvas, landscape-style centered device
+            // iPad Pro layout — 2048×2732 canvas, centered headline and large iPad Pro frame
             const cxIpad = (w: number) => Math.round((2048 - w) / 2)
             reset(
               {
@@ -618,13 +641,13 @@ export function LeftSidebar() {
                   id: uid(),
                   name: "App Headline",
                   type: "text",
-                  x: cxIpad(1600),
-                  y: 100,
-                  width: 1600,
-                  height: 200,
+                  x: cxIpad(1700),
+                  y: 120,
+                  width: 1700,
+                  height: 180,
                   textProps: {
                     text: "Your App. Reimagined.",
-                    fontSize: 140,
+                    fontSize: 130,
                     fontFamily: "Inter",
                     fontStyle: "bold",
                     fill: "#1e1b4b",
@@ -636,13 +659,13 @@ export function LeftSidebar() {
                   id: uid(),
                   name: "Subtext",
                   type: "text",
-                  x: cxIpad(1400),
-                  y: 280,
-                  width: 1400,
+                  x: cxIpad(1500),
+                  y: 320,
+                  width: 1500,
                   height: 120,
                   textProps: {
                     text: "Stunning on every screen, built for iPad",
-                    fontSize: 80,
+                    fontSize: 68,
                     fontFamily: "Inter",
                     fontStyle: "normal",
                     fill: "#4338ca",
@@ -652,18 +675,21 @@ export function LeftSidebar() {
                 {
                   ...base,
                   id: uid(),
-                  name: "iPad Pro 12.9",
+                  name: 'iPad Pro 12.9"',
                   type: "device",
-                  x: cxIpad(1400),
-                  y: 440,
-                  width: 1400,
-                  height: 1960,
+                  x: cxIpad(1500),
+                  y: 480,
+                  width: 1500,
+                  height: 2000,
                   deviceProps: { frameType: "ipad_pro" },
                 },
-              ]
+              ],
+              2048,
+              2732,
+              0.18
             )
           } else if (preset === "android_tablet") {
-            // Android Tablet layout — 1600×2560 canvas
+            // Android Tablet layout — 1600×2560 canvas, dark navy gradient and tablet frame
             const cxAt = (w: number) => Math.round((1600 - w) / 2)
             reset(
               {
@@ -677,12 +703,12 @@ export function LeftSidebar() {
                   name: "App Headline",
                   type: "text",
                   x: cxAt(1400),
-                  y: 100,
+                  y: 120,
                   width: 1400,
-                  height: 200,
+                  height: 160,
                   textProps: {
                     text: "Built for Android",
-                    fontSize: 130,
+                    fontSize: 110,
                     fontFamily: "Inter",
                     fontStyle: "bold",
                     fill: "#ffffff",
@@ -694,13 +720,13 @@ export function LeftSidebar() {
                   id: uid(),
                   name: "Subtext",
                   type: "text",
-                  x: cxAt(1200),
-                  y: 280,
-                  width: 1200,
+                  x: cxAt(1250),
+                  y: 300,
+                  width: 1250,
                   height: 110,
                   textProps: {
                     text: "Optimized for Play Store tablet listing",
-                    fontSize: 72,
+                    fontSize: 58,
                     fontFamily: "Inter",
                     fontStyle: "normal",
                     fill: "#7dd3fc",
@@ -713,12 +739,15 @@ export function LeftSidebar() {
                   name: "Android Tablet",
                   type: "device",
                   x: cxAt(1200),
-                  y: 420,
+                  y: 460,
                   width: 1200,
-                  height: 1900,
+                  height: 1800,
                   deviceProps: { frameType: "android_tablet" },
                 },
-              ]
+              ],
+              1600,
+              2560,
+              0.2
             )
           } else {
             // light

@@ -285,6 +285,7 @@ export function TopToolbar() {
                     { label: 'iPhone 6.7" (Portrait)', w: 1290, h: 2796 },
                     { label: 'iPhone 6.5" (Portrait)', w: 1242, h: 2688 },
                     { label: 'iPad Pro 12.9"', w: 2048, h: 2732 },
+                    { label: 'iPad Pro 11"', w: 1668, h: 2388 },
                   ].map((p) => (
                     <button
                       key={p.label}
@@ -308,6 +309,7 @@ export function TopToolbar() {
                   </span>
                   {[
                     { label: "Phone Portrait", w: 1080, h: 1920 },
+                    { label: 'Tablet 10" (Portrait)', w: 1600, h: 2560 },
                     { label: 'Tablet 7"', w: 1200, h: 1920 },
                   ].map((p) => (
                     <button

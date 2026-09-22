@@ -606,10 +606,13 @@ export function CanvasArea() {
 
     if (bg.type === "gradient") {
       let stops: (string | number)[] = [0, "#7c3aed", 1, "#4f46e5"]
-      if (bg.gradient?.includes("#ec4899")) stops = [0, "#ec4899", 0.5, "#f43f5e", 1, "#f59e0b"]
-      else if (bg.gradient?.includes("#059669"))
-        stops = [0, "#059669", 0.5, "#10b981", 1, "#6ee7b7"]
-      else if (bg.gradient?.includes("#1e293b")) stops = [0, "#1e293b", 1, "#0f172a"]
+      const hexMatches = bg.gradient?.match(/#[0-9a-fA-F]{3,8}/g)
+      if (hexMatches && hexMatches.length >= 2) {
+        stops = []
+        hexMatches.forEach((color, idx) => {
+          stops.push(idx / (hexMatches.length - 1), color)
+        })
+      }
 
       return (
         <Rect
@@ -1161,7 +1164,7 @@ export function CanvasArea() {
               )}
               {screenPlaceholder}
               {/* Front camera top center */}
-              <Circle x={w * 0.5} y={w * 0.037} radius={w * 0.018} fill="#000" />
+              <Circle x={w * 0.5} y={w * 0.0125} radius={w * 0.006} fill="#0a0a0c" />
               <Rect
                 x={w}
                 y={h * 0.22}
@@ -1218,7 +1221,8 @@ export function CanvasArea() {
                 />
               )}
               {screenPlaceholder}
-              <Circle x={w * 0.5} y={w * 0.04} radius={w * 0.02} fill="#000" />
+              {/* Front camera top center */}
+              <Circle x={w * 0.5} y={w * 0.0125} radius={w * 0.006} fill="#0a0a0c" />
               <Rect
                 x={w}
                 y={h * 0.25}

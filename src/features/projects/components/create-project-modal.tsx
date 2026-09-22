@@ -15,7 +15,7 @@ import { CanvasData } from "@/types/project"
 
 const createProjectSchema = z.object({
   name: z.string().min(1, "Project name is required").max(60, "Name must be under 60 characters"),
-  preset: z.enum(["iphone", "android", "social", "custom"]),
+  preset: z.enum(["iphone", "android", "ipad", "android_tablet", "social", "custom"]),
   width: z.number().min(200, "Min width 200px").max(4000, "Max width 4000px"),
   height: z.number().min(200, "Min height 200px").max(4000, "Max height 4000px"),
   bgColor: z.string().min(4, "Invalid color value"),
@@ -56,9 +56,15 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
     if (selectedPreset === "iphone") {
       setValue("width", 1242)
       setValue("height", 2688)
+    } else if (selectedPreset === "ipad") {
+      setValue("width", 2048)
+      setValue("height", 2732)
     } else if (selectedPreset === "android") {
       setValue("width", 1080)
       setValue("height", 1920)
+    } else if (selectedPreset === "android_tablet") {
+      setValue("width", 1600)
+      setValue("height", 2560)
     } else if (selectedPreset === "social") {
       setValue("width", 1080)
       setValue("height", 1080)
@@ -162,7 +168,9 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { value: "iphone", label: "iPhone App Store" },
-                    { value: "android", label: "Android Google Play" },
+                    { value: "ipad", label: 'iPad Pro 12.9"' },
+                    { value: "android", label: "Android Phone" },
+                    { value: "android_tablet", label: "Android Tablet" },
                     { value: "social", label: "Social Graphics" },
                     { value: "custom", label: "Custom Canvas" },
                   ].map((option) => (
